@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": "e2930e52-bce3-4b89-b8bd-7f00d88914eb",
+      "username": "USER",
+      "email": "test@med.com",
+      "password": "$2b$10$C0TYA/EwCQLuDJ14fU1gD.LJtGUFybbtsBSfhGq2HFL9S04gWXEKS"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "96bb5f89-78d6-4a16-89d4-7294f32b92cc",
+      "title": "Ryba 1",
+      "isCompleted": false,
+      "idUser": "e2930e52-bce3-4b89-b8bd-7f00d88914eb"
+    }
+  ]
+}

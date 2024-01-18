@@ -1,2 +1,2 @@
 # Todo-List
-back-end ToDo app
+back-end for todo-app
