@@ -9,7 +9,12 @@ class UsersServices {
             const data = await fileHelpers.readFile(userDataFile);
             data.users.push(currentUser);
             await fileHelpers.writeFile(userDataFile, data)
-            return currentUser
+            
+            return {
+                id: currentUser.id,
+                username : currentUser.username,
+                email: currentUser.email
+            }
         } catch (err) {
             return err;
         }

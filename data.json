@@ -5,14 +5,20 @@
       "username": "USER",
       "email": "test@med.com",
       "password": "$2b$10$C0TYA/EwCQLuDJ14fU1gD.LJtGUFybbtsBSfhGq2HFL9S04gWXEKS"
+    },
+    {
+      "id": "e463ef2c-2110-4c85-a926-5a6b6ccede23",
+      "username": "johnCena",
+      "email": "johncena@mail.com",
+      "password": "$2b$10$D/FniazQApgDS9f66xjvX.nleDOlvVQMqnnvFv7ffoGqB4v34.7Wa"
     }
   ],
   "tasks": [
     {
-      "id": "96bb5f89-78d6-4a16-89d4-7294f32b92cc",
-      "title": "Ryba 1",
-      "isCompleted": false,
-      "idUser": "e2930e52-bce3-4b89-b8bd-7f00d88914eb"
+      "id": "87073514-2bfb-4400-9307-2c28de3c9ff5",
+      "title": "do it",
+      "isCompleted": true,
+      "idUser": "e463ef2c-2110-4c85-a926-5a6b6ccede23"
     }
   ]
 }

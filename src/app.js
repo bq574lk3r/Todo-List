@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const Sentry = require("@sentry/node");
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('../swaggerSpec.js'); 
 
 require('dotenv').config();
 const PORT = process.env.PORT;
@@ -16,7 +18,10 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
 
+
 app.use(express.json());
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(router);
 

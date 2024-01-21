@@ -1,0 +1,103 @@
+paths:
+  /register/:
+    post:
+      summary: Register User
+      description: Add new user and return new user object with id if success
+      tags:
+       - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+                
+      responses:
+        "201":
+          description: <b>Ok</b>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResp"
+        "400":
+          description: Неверые данные
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+  /login/:
+    post:
+      summary: Login User
+      description: Log in user and return token
+      tags:
+       - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+                
+      responses:
+        "200":
+          description: <b>Ok</b>
+          content:
+            application/json:
+              schema:
+                type: string
+                example: JWTtoken...
+        "400":
+          description: Неверые данные
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: johnCena
+        email:
+          type: string
+          example: johncena@mail.com
+        password:
+          type: string
+          example: t3stPas$
+    UserResp:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 96bb5f89-78d6-4a16-89d4-7294f32b92c4
+        username:
+          type: string
+          example: johnCena
+        email:
+          type: string
+          example: johncena@mail.com
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          example: johncena@mail.com
+        password:
+          type: string
+          example: t3stPas$
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorObject"
+    ErrorObject:
+      type: object
+      properties:
+        msg:
+          type: string

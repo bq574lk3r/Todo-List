@@ -6,7 +6,7 @@ class UsersHelpers {
         const { users } = await fileHelpers.readFile(userDataFile);
         const { username, email } = req.body;
         if (!!users.find(el => el.username === username || el.email === email)) {
-            res.status(400).send('пользватель с таким username или почтовым ящиком зарегестрирован');
+            res.status(400).send({ message: 'пользователь с таким username или почтовым ящиком уже зарегистрирован' });
             return;
         } else {
             next();
