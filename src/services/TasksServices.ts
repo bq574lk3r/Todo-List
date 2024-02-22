@@ -1,20 +1,19 @@
-const Task = require('../models/Task');
+import { Task } from '../models/Task';
+import fileHelpers from '../helpers/FileHelpers';
+const taskDataFile = process.env.DATA || 'data.json';
 
-const fileHelpers = require('../helpers/FileHelpers');
-const taskDataFile = 'data.json';
-
-class TasksServices {
-    async getTasks(idUser) {
+export class TasksServices {
+    async getTasks(idUser: any):Promise<any> {
         try {
             const data = await fileHelpers.readFile(taskDataFile);
-            return data.tasks.filter(tasks => tasks.idUser === idUser);
+            return data.tasks.filter((tasks:any) => tasks.idUser === idUser);
         } catch (error) {
             return "ошибка при получении таск"
         }
 
     }
 
-    async createTask(title, isCompleted, idUser) {
+    async createTask(title: any, isCompleted: any, idUser: any):Promise<any> {
         try {
             const currentTask = new Task(title, isCompleted, idUser);
             const data = await fileHelpers.readFile(taskDataFile);
@@ -26,28 +25,28 @@ class TasksServices {
         }
     }
 
-    async updateTitle(title, idUser, idTask) {
+    async updateTitle(title: any, idUser: any, idTask: any):Promise<any> {
         try {
             const data = await fileHelpers.readFile(taskDataFile);
 
-            const taskById = data.tasks.find(el => el.idUser == idUser && el.id === idTask);
-            if (!taskById){
+            const taskById = data.tasks.find((el: any) => el.idUser == idUser && el.id === idTask);
+            if (!taskById) {
                 throw new Error('у данного пользователя нет такой таски')
             }
             taskById.title = title;
             await fileHelpers.writeFile(taskDataFile, data);
             return taskById;
 
-        } catch (err) {
+        } catch (err: any) {
             return err.message
         }
     }
 
-    async updateStatus(idUser, idTask) {
+    async updateStatus(idUser: any, idTask: any):Promise<any> {
         try {
             const data = await fileHelpers.readFile(taskDataFile);
 
-            const taskById = data.tasks.find(el => el.idUser == idUser && el.id === idTask);
+            const taskById = data.tasks.find((el: any) => el.idUser == idUser && el.id === idTask);
             taskById.isCompleted = !taskById.isCompleted;
             await fileHelpers.writeFile(taskDataFile, data);
             return taskById;
@@ -57,10 +56,10 @@ class TasksServices {
         }
     }
 
-    async deleteTask(idUser, idTask) {
+    async deleteTask(idUser: string, idTask: string):Promise<any> {
         try {
             const data = await fileHelpers.readFile(taskDataFile);
-            const taskIndex = data.tasks.findIndex(el => el.idUser == idUser && el.id === idTask);
+            const taskIndex = data.tasks.findIndex((el: any) => el.idUser == idUser && el.id === idTask);
             data.tasks.splice(taskIndex, 1);
             await fileHelpers.writeFile(taskDataFile, data);
             return 'deleted'
@@ -71,6 +70,4 @@ class TasksServices {
     }
 }
 
-module.exports = {
-    TasksServices: new TasksServices()
-}
+export default new TasksServices()

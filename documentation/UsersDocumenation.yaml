@@ -20,7 +20,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserResp"
         "400":
-          description: Неверые данные
+          description: <b>Bad Request</b>
           content:
             application/json:
               schema:

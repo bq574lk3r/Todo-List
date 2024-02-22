@@ -1,16 +1,16 @@
-const { UsersServices } = require('../services/UsersServices');
-const { validationResult } = require("express-validator");
-require('dotenv').config();
-const SECRET_KEY = process.env.SECRET_KEY;
+import usersServices from '../services/UsersServices';
+import { validationResult } from "express-validator";
 
-const bcrypt = require('bcrypt');
-const Sentry = require("@sentry/node");
+const SECRET_KEY = process.env.SECRET_KEY || "";
 
-const jwt = require('jsonwebtoken')
+import bcrypt from 'bcrypt';
+import Sentry from "@sentry/node";
+
+import jwt from 'jsonwebtoken';
 
 
 class UsersControllers {
-    async createUser(req, res) {
+    async createUser(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -20,26 +20,33 @@ class UsersControllers {
 
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            const newUser = await UsersServices.createUser(username, email, hashedPassword)
-
+            let newUser;
+            await usersServices.createUser(username, email, hashedPassword)
+                .then((result: any) => { newUser = result })
+                .catch(() => {throw new Error('400')})
             res.status(201).send(newUser);
-        } catch (error) {
-            res.status(500).json({ message: "Ошибка при регистрации пользователя" });
-            Sentry.captureException(error);
+        } catch (err: any) {
+            if (err.message === '400') {
+                res.status(400).json({ message: "the user is already registered" });
+            } else {
+                res.status(500).json({ message: "error while registering user" });
+                Sentry.captureException(err);
+            }
+
         }
 
     }
 
-    async loginUser(req, res) {
+    async loginUser(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const {email, password } = req.body;
+            const { email, password } = req.body;
 
-            const user = await UsersServices.getUserByEmail(email);
+            const user = await usersServices.getUserByEmail(email);
             if (!user) {
                 return res.status(401).json({ message: "Неверный email или пароль" });
             }
@@ -62,4 +69,4 @@ class UsersControllers {
     }
 }
 
-module.exports = new UsersControllers();
+export default new UsersControllers();

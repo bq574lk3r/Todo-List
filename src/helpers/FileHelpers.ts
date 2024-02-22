@@ -1,7 +1,7 @@
-const fs = require('fs');
+import fs from 'fs';
 
 class FileHelpers {
-    readFile(file) {
+    readFile(file:string):Promise<any> {
         return new Promise((res, rej) => {
             fs.readFile(file, 'utf8', (err, data) => {
                 if (err) {
@@ -12,7 +12,7 @@ class FileHelpers {
             });
         });
     }
-    writeFile(file, data) {
+    writeFile(file:string, data:any):Promise<any> {
         return new Promise((res, rej) => {
             fs.writeFile(file, JSON.stringify(data, null, 2), (err) => {
                 if (err) {
@@ -25,4 +25,4 @@ class FileHelpers {
     }
 }
 
-module.exports = new FileHelpers();
+export default new FileHelpers();

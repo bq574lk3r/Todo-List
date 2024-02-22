@@ -1,12 +1,12 @@
-const { body, param } = require('express-validator');
+import { body, param } from 'express-validator';
 
 const customFunctions = {
     validatePassMsg: 'пароль должен содержать 6-16 символов, латинские буквы в верхнем и нижнем регистре и спецсимволы',
-    validatePass(value) {
+    validatePass(value:string) {
         return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z](?=.*[\W])).{6,16}$/.test(String(value));
     },
     validateUsernameMsg: 'username должен быть длинной 2-16 символов и латиницей',
-    validateUsername(value) {
+    validateUsername(value:string) {
         return !/[^0-9a-zA-Z].{2,16}$/.test(String(value));
     }
 };
@@ -41,4 +41,4 @@ class ValidationHelpers {
     ]
 };
 
-module.exports = new ValidationHelpers();
+export default new ValidationHelpers();

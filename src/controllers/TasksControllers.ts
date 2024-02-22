@@ -1,72 +1,72 @@
-const { TasksServices } = require('../services/TasksServices');
-const { validationResult } = require("express-validator");
-const Sentry = require("@sentry/node");
+import tasksServices from '../services/TasksServices';
+import { validationResult } from "express-validator";
+import Sentry from "@sentry/node";
 
 require('dotenv').config();
 
 class TasksControllers {
 
-    async getTasks(req, res) {
+    async getTasks(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            res.status(200).send(await TasksServices.getTasks(req.userId));
+            res.status(200).send(await tasksServices.getTasks(req.userId));
         } catch (error) {
             Sentry.captureException(error);
         }
 
     }
 
-    async createTask(req, res) {
+    async createTask(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
             const { title, isCompleted } = req.body;
-            const newTask = await TasksServices.createTask(title, isCompleted, req.userId);
+            const newTask = await tasksServices.createTask(title, isCompleted, req.userId);
             res.status(201).send(newTask);
         } catch (error) {
             Sentry.captureException(error);
         }
     }
 
-    async updateTitle(req, res){
+    async updateTitle(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
             const { title } = req.body;
-            const updatedTask = await TasksServices.updateTitle(title, req.userId, req.params.id);
+            const updatedTask = await tasksServices.updateTitle(title, req.userId, req.params.id);
             res.status(200).send(updatedTask);
         } catch (error) {
             Sentry.captureException(error);
-        } 
+        }
     }
 
-    async updateStatus(req, res){
+    async updateStatus(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const updatedTask = await TasksServices.updateStatus(req.userId, req.params.id);
+            const updatedTask = await tasksServices.updateStatus(req.userId, req.params.id);
             res.status(200).send(updatedTask);
         } catch (error) {
             Sentry.captureException(error);
-        } 
+        }
     }
 
-    async deleteTask(req, res) {
+    async deleteTask(req: any, res: any) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            res.send(await TasksServices.deleteTask(req.userId, req.params.id));
+            res.send(await tasksServices.deleteTask(req.userId, req.params.id));
         } catch (error) {
             Sentry.captureException(error);
         }
@@ -75,4 +75,4 @@ class TasksControllers {
 
 }
 
-module.exports = new TasksControllers();
+export default new TasksControllers()

@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.SECRET_KEY;
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = (req: any, res: any, next: any) => {
     try {
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split(' ')[1];
         if (token == null) res.status(401).send('Unauthorized');
-        jwt.verify(token, SECRET_KEY, (err, payload) => {
-            if (err) { 
-                next(new Error('invalid token')); 
+        jwt.verify(token, SECRET_KEY, (err: any, payload: any) => {
+            if (err) {
+                next(new Error('invalid token'));
             };
 
             req.userId = payload.userId;
@@ -20,4 +20,4 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
-module.exports = authenticateToken;
+export default authenticateToken
