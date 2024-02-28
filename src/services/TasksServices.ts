@@ -1,136 +1,67 @@
 import { Task } from '../models/Task';
-import MongoHelpers from '../helpers/MongoHelpers';
-import { ObjectId } from 'mongodb'
-
-const { getConnection, useDefaultDb } = MongoHelpers
+import fileHelpers from '../helpers/FileHelpers';
+const taskDataFile = process.env.DATA || 'data.json';
 
 export class TasksServices {
-    #COLLECTION_TASKS = 'tasks';
-    #COLLECTION_USERS = 'users';
-    async getTasks(idUser: string): Promise<any> {
+    async getTasks(idUser: any):Promise<any> {
         try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-
-            const tasks = await db.collection(this.#COLLECTION_TASKS)
-                .find({
-                    _idUser: new ObjectId(idUser)
-                })
-                .project({ '_idUser': 0 }).sort({ isCompleted: 1, _id: 1 })
-                .toArray();
-
-            connection.close();
-            if (!tasks) {
-                throw new Error('404')
-            }
-            return tasks;
+            const data = await fileHelpers.readFile(taskDataFile);
+            return data.tasks.filter((tasks:any) => tasks.idUser === idUser);
         } catch (error) {
-            throw new Error('404');
+            return "ошибка при получении таск"
         }
+
     }
-    
-    async createTask(title: string, isCompleted: boolean, idUser: string): Promise<any> {
+
+    async createTask(title: any, isCompleted: any, idUser: any):Promise<any> {
         try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-            
-            const currentTask = new Task(title, isCompleted, new ObjectId(idUser));
-
-            const idTask = (await db.collection(this.#COLLECTION_TASKS)
-                .insertOne(currentTask)).insertedId;
-
-            await db.collection(this.#COLLECTION_USERS)
-                .updateOne({ _id: new ObjectId(idUser) }, { $push: { tasks: idTask } })
-
-            connection.close();
-            return {
-                id: idTask.toString(),
-                idUser: currentTask._idUser,
-                isCompleted: currentTask.isCompleted,
-                title: currentTask.title
-            };
+            const currentTask = new Task(title, isCompleted, idUser);
+            const data = await fileHelpers.readFile(taskDataFile);
+            data.tasks.push(currentTask);
+            await fileHelpers.writeFile(taskDataFile, data);
+            return currentTask;
         } catch (err) {
             return "ошибка при создании таски"
         }
     }
 
-    async updateTitle(title: string, idUser: string, idTask: string): Promise<any> {
+    async updateTitle(title: any, idUser: any, idTask: any):Promise<any> {
         try {
+            const data = await fileHelpers.readFile(taskDataFile);
 
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-            const taskById = await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndUpdate({ _id: new ObjectId(idTask) }, { $set: { title } }, {
-                    returnDocument: "after"
-                })
-            connection.close();
-
+            const taskById = data.tasks.find((el: any) => el.idUser == idUser && el.id === idTask);
             if (!taskById) {
-                throw new Error('404')
+                throw new Error('у данного пользователя нет такой таски')
             }
-
-            return {
-                id: taskById._id,
-                idUser: taskById._idUser,
-                title: taskById.title,
-                isCompleted: taskById.isCompleted
-            };
+            taskById.title = title;
+            await fileHelpers.writeFile(taskDataFile, data);
+            return taskById;
 
         } catch (err: any) {
-            throw new Error(err)
+            return err.message
         }
     }
 
-    async updateStatus(idUser: any, idTask: any): Promise<any> {
+    async updateStatus(idUser: any, idTask: any):Promise<any> {
         try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
+            const data = await fileHelpers.readFile(taskDataFile);
 
-            const taskById = await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndUpdate(
-                    { _id: new ObjectId(idTask) },
-                    [{
-                        $set: {
-                            isCompleted: {
-                                $not: "$isCompleted"
-                            }
-                        }
-                    }],
-                    {
-                        returnDocument: "after"
-                    })
+            const taskById = data.tasks.find((el: any) => el.idUser == idUser && el.id === idTask);
+            taskById.isCompleted = !taskById.isCompleted;
+            await fileHelpers.writeFile(taskDataFile, data);
+            return taskById;
 
-            connection.close();
-
-            if (!taskById) {
-                throw new Error('404')
-            }
-
-            return {
-                id: taskById._id,
-                idUser: taskById._idUser,
-                title: taskById.title,
-                isCompleted: taskById.isCompleted
-            };
-
-        } catch (err: any) {
-            throw new Error(err);
+        } catch (err) {
+            return "ошибка при обновлении статуса таски"
         }
     }
 
-    async deleteTask(idUser: string, idTask: string): Promise<any> {
+    async deleteTask(idUser: string, idTask: string):Promise<any> {
         try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-
-            await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndDelete({
-                    _id: new ObjectId(idTask)
-                })
-            await db.collection(this.#COLLECTION_USERS)
-                .updateOne({ _id: new ObjectId(idUser) }, { $pull: { tasks: new ObjectId(idTask) } })
-            connection.close();
-
+            const data = await fileHelpers.readFile(taskDataFile);
+            const taskIndex = data.tasks.findIndex((el: any) => el.idUser == idUser && el.id === idTask);
+            data.tasks.splice(taskIndex, 1);
+            await fileHelpers.writeFile(taskDataFile, data);
             return 'deleted'
         } catch (err) {
             return 'ошибка при удалении таски';

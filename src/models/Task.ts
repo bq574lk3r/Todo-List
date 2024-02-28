@@ -1,11 +1,16 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class Task {
-    id: string | undefined;
+    id: string;
     title: string;
     isCompleted: boolean;
-    _idUser: string | any;
-    constructor(title: string, isCompleted: boolean, idUser: any) {
+    idUser: string;
+    constructor(title:string, isCompleted:boolean, idUser:string) {
+    
+        this.id = uuidv4();
         this.title = title;
         this.isCompleted = isCompleted;
-        this._idUser = idUser;
+        this.idUser = idUser;
+
     }
 }

@@ -1,13 +1,12 @@
 import { body, param } from 'express-validator';
-import { ObjectId } from 'mongodb'
 
 const customFunctions = {
     validatePassMsg: 'пароль должен содержать 6-16 символов, латинские буквы в верхнем и нижнем регистре и спецсимволы',
-    validatePass(value: string) {
+    validatePass(value:string) {
         return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z](?=.*[\W])).{6,16}$/.test(String(value));
     },
     validateUsernameMsg: 'username должен быть длинной 2-16 символов и латиницей',
-    validateUsername(value: string) {
+    validateUsername(value:string) {
         return !/[^0-9a-zA-Z].{2,16}$/.test(String(value));
     }
 };
@@ -38,7 +37,7 @@ class ValidationHelpers {
     ]
 
     validateParamId = [
-        param('id').notEmpty().custom((str: string) => (ObjectId.isValid(str))).withMessage('не корректный id')
+        param('id').notEmpty()
     ]
 };
 

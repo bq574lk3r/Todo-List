@@ -7,8 +7,6 @@ import path from 'path';
 
 require('dotenv').config({ path: `${process.env.NODE_ENV || ''}.env` });
 
-console.log('NODE_ENV',process.env.NODE_ENV)
-
 const PORT = process.env.PORT;
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
@@ -31,8 +29,9 @@ app.use(express.static(path.join(__dirname, '..', 'static')));
 
 app.use(Sentry.Handlers.errorHandler());
 
-app.use(function onError(err: any, req: any, res: any) {
-    res.status(500).end(res.sentry + "\n");
+app.use(function onError(err: any, req: any, res: any, next: any) {
+    res.statusCode = 500;
+    res.end(res.sentry + "\n");
 });
 
 app.listen(PORT, () => {

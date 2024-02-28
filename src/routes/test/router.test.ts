@@ -1,16 +1,9 @@
 import app from '../../app'
 import request from 'supertest'
-import MongoHelpers from '../../helpers/MongoHelpers';
-const { getConnection, useDefaultDb } = MongoHelpers
+import testHelpers from '../../helpers/TestHelpers'
 
 afterAll(async () => {
-    const connection = await getConnection();
-    const db = useDefaultDb(connection);
-
-    console.log(await db.collection('users').deleteMany({}));
-    await db.collection('tasks').deleteMany({});
-
-    connection.close();
+    await testHelpers.deleteData();
 });
 
 
@@ -70,7 +63,6 @@ describe('POST /login', () => {
         const res = await request(app)
             .post('/login')
             .send({
-                username: 'testUserLogin',
                 email: 'testuserlogin@testmail.com',
                 password: 't2stPas$ss'
             })
@@ -202,7 +194,6 @@ describe('GET /todos', () => {
 describe('PATCH /todos', () => {
     let token: string;
     let idTask: string;
-    const notCorrectIdTask: string = 'test'.repeat(6);
     beforeAll(async () => {
         await request(app)
             .post('/register')
@@ -262,9 +253,9 @@ describe('PATCH /todos', () => {
     })
 
 
-    it('returns status code 400 in case of invalid id.', async () => {
+    it('returns status code 404 in case of invalid id.', async () => {
         const res = await request(app)
-            .patch('/todos/' + notCorrectIdTask)
+            .patch('/todos/not-' + idTask)
             .set('Authorization', 'Bearer ' + token)
             .send(
                 {
@@ -272,14 +263,13 @@ describe('PATCH /todos', () => {
                 }
             )
 
-        expect(res.statusCode).toEqual(400);
+        expect(res.statusCode).toEqual(404);
     })
 })
 
 describe('DELETE /todos', () => {
     let token: string;
     let idTask: string;
-    const notCorrectIdTask: string = 'test'.repeat(6);
     beforeAll(async () => {
         await request(app)
             .post('/register')
@@ -315,12 +305,12 @@ describe('DELETE /todos', () => {
         expect(res.statusCode).toEqual(200);
     })
 
-    it('returns status code 400 in case of invalid id', async () => {
+    it('returns status code 404 in case of invalid id', async () => {
         const res = await request(app)
-            .delete('/todos/' + notCorrectIdTask)
+            .delete('/todos/' + idTask)
             .set('Authorization', 'Bearer ' + token)
             .send()
 
-        expect(res.statusCode).toEqual(400);
+        expect(res.statusCode).toEqual(404);
     })
 })

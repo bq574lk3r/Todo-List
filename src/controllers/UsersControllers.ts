@@ -1,7 +1,7 @@
 import usersServices from '../services/UsersServices';
 import { validationResult } from "express-validator";
 
-const SECRET_KEY = String(process.env.SECRET_KEY);
+const SECRET_KEY = process.env.SECRET_KEY || "";
 
 import bcrypt from 'bcrypt';
 import Sentry from "@sentry/node";
@@ -23,7 +23,7 @@ class UsersControllers {
             let newUser;
             await usersServices.createUser(username, email, hashedPassword)
                 .then((result: any) => { newUser = result })
-                .catch(() => { throw new Error('400') })
+                .catch(() => {throw new Error('400')})
             res.status(201).send(newUser);
         } catch (err: any) {
             if (err.message === '400') {
