@@ -1,31 +1,45 @@
 import { User } from '../models/User';
-import fileHelpers from '../helpers/FileHelpers';
-const userDataFile = process.env.DATA || 'data.json';
+import MongoHelpers from '../helpers/MongoHelpers';
+const { getConnection, useDefaultDb } = MongoHelpers
+
 
 class UsersServices {
+    #COLLECTION = "users";
     async createUser(username: string, email: string, password: string): Promise<any> {
         try {
-            const data = await fileHelpers.readFile(userDataFile);
-            if(data.users.find((el:any) => (el.username === username || el.username === email))){
+            const currentUser = new User(username, email, password);
+            const connection = await getConnection();
+            const db = useDefaultDb(connection);
+            if (!await db.collection(this.#COLLECTION).findOne({ $or: [{ email: email }, { username: username }] })) {
+                currentUser.id = (await db.collection(this.#COLLECTION).insertOne(currentUser)).insertedId
+            } else {
+                connection.close();
                 throw 'the user is already registered';
             }
-            const currentUser = new User(username, email, password);
-            data.users.push(currentUser);
-            await fileHelpers.writeFile(userDataFile, data)
+            connection.close();
             return {
                 id: currentUser.id,
                 username: currentUser.username,
                 email: currentUser.email
-            }
-        } catch (err:any) {
-             throw new Error(err);
+            };
+        } catch (err: any) {
+            throw new Error(err);
         }
     }
 
     async getUserByEmail(email: string): Promise<any> {
         try {
-            const data = await fileHelpers.readFile(userDataFile);
-            return data.users.find((el: any): boolean => el.email == email)
+            const connection = await getConnection();
+            const db = useDefaultDb(connection);
+            const currentUser = await db.collection(this.#COLLECTION)
+                .findOne({ email: email })
+            connection.close();
+            return {
+                id: currentUser._id,
+                username: currentUser.username,
+                email: currentUser.email,
+                password: currentUser.password
+            };
         } catch (err) {
             return err;
         }

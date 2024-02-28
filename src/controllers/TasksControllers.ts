@@ -12,7 +12,15 @@ class TasksControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            res.status(200).send(await tasksServices.getTasks(req.userId));
+            await tasksServices.getTasks(req.userId)
+                .then((tasks: any) => {
+                    res.status(200).send(tasks);
+                })
+                .catch(() => {
+                    res.status(404).send({
+                        errors: 'not found'
+                    });
+                })
         } catch (error) {
             Sentry.captureException(error);
         }
@@ -26,8 +34,16 @@ class TasksControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
             const { title, isCompleted } = req.body;
-            const newTask = await tasksServices.createTask(title, isCompleted, req.userId);
-            res.status(201).send(newTask);
+            await tasksServices.createTask(title, isCompleted, req.userId)
+                .then((newTask: any) => {
+                    res.status(201).send(newTask);
+                })
+                .catch(() => {
+                    res.status(400).send({
+                        errors: 'error when creating task'
+                    });
+                });
+
         } catch (error) {
             Sentry.captureException(error);
         }
@@ -40,8 +56,15 @@ class TasksControllers {
                 return res.status(400).json({ errors: errors.array() });
             }
             const { title } = req.body;
-            const updatedTask = await tasksServices.updateTitle(title, req.userId, req.params.id);
-            res.status(200).send(updatedTask);
+            return await tasksServices.updateTitle(title, req.userId, req.params.id)
+                .then((updatedTask) => {
+                    return res.status(200).send(updatedTask)
+                })
+                .catch(() => {
+                    return res.status(404).send({
+                        errors: 'not found'
+                    })
+                });
         } catch (error) {
             Sentry.captureException(error);
         }
@@ -53,8 +76,13 @@ class TasksControllers {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            const updatedTask = await tasksServices.updateStatus(req.userId, req.params.id);
-            res.status(200).send(updatedTask);
+            await tasksServices.updateStatus(req.userId, req.params.id)
+                .then((updatedTask) => {
+                    res.status(200).send(updatedTask)
+                })
+                .catch(() => {
+                    res.status(404).send({ errors: 'not found' })
+                });
         } catch (error) {
             Sentry.captureException(error);
         }
