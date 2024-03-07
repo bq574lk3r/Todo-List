@@ -1,49 +1,46 @@
-import { User } from '../models/User';
-import MongoHelpers from '../helpers/MongoHelpers';
-const { getConnection, useDefaultDb } = MongoHelpers
+import User from '../models/User';
 
+interface IUser {
+    id: string,
+    username: string,
+    email: string,
+    password?: string,
+}
 
 class UsersServices {
-    #COLLECTION = "users";
-    async createUser(username: string, email: string, password: string): Promise<any> {
+    async createUser(username: string, email: string, password: string): Promise<IUser | void> {
         try {
-            const currentUser = new User(username, email, password);
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-            if (!await db.collection(this.#COLLECTION).findOne({ $or: [{ email: email }, { username: username }] })) {
-                currentUser.id = (await db.collection(this.#COLLECTION).insertOne(currentUser)).insertedId
-            } else {
-                connection.close();
-                throw 'the user is already registered';
-            }
-            connection.close();
+            const currentUser = new User({ username, email, password });
+
+            await currentUser.save().catch(() => {
+                throw 'the user is already registered'
+            })
+
             return {
-                id: currentUser.id,
-                username: currentUser.username,
-                email: currentUser.email
-            };
+                id: currentUser._id.toString(),
+                username,
+                email
+            }
         } catch (err: any) {
             throw new Error(err);
         }
     }
 
-    async getUserByEmail(email: string): Promise<any> {
+    async getUserByEmail(email: string): Promise<IUser | void > {
         try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-            const currentUser = await db.collection(this.#COLLECTION)
-                .findOne({ email: email })
-            connection.close();
-            return {
-                id: currentUser._id,
+            const currentUser = await User.findOne({ email }).catch(() => { throw '404' });
+
+            if (currentUser) return {
+                id: currentUser._id.toString(),
                 username: currentUser.username,
                 email: currentUser.email,
                 password: currentUser.password
             };
-        } catch (err) {
-            return err;
+        } catch (err: any) {
+            throw new Error(err);
         }
 
     }
 }
+
 export default new UsersServices()

@@ -1,16 +1,16 @@
 import usersServices from '../services/UsersServices';
+import {Request, Response} from 'express';
 import { validationResult } from "express-validator";
-
-const SECRET_KEY = String(process.env.SECRET_KEY);
 
 import bcrypt from 'bcrypt';
 import Sentry from "@sentry/node";
 
 import jwt from 'jsonwebtoken';
 
+const SECRET_KEY = String(process.env.SECRET_KEY);
 
 class UsersControllers {
-    async createUser(req: any, res: any) {
+    async createUser(req: Request, res: Response) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -37,7 +37,7 @@ class UsersControllers {
 
     }
 
-    async loginUser(req: any, res: any) {
+    async loginUser(req: Request, res: Response) {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -50,8 +50,8 @@ class UsersControllers {
             if (!user) {
                 return res.status(401).json({ message: "Неверный email или пароль" });
             }
-
-            const isPasswordValid = await bcrypt.compare(password, user.password);
+            
+            const isPasswordValid = await bcrypt.compare(password, String(user.password));
             if (!isPasswordValid) {
                 return res.status(401).json({ message: "Неверный email или пароль" });
             }

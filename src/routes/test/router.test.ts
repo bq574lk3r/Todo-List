@@ -1,16 +1,9 @@
 import app from '../../app'
 import request from 'supertest'
-import MongoHelpers from '../../helpers/MongoHelpers';
-const { getConnection, useDefaultDb } = MongoHelpers
+import mongoose from 'mongoose';
 
 afterAll(async () => {
-    const connection = await getConnection();
-    const db = useDefaultDb(connection);
-
-    console.log(await db.collection('users').deleteMany({}));
-    await db.collection('tasks').deleteMany({});
-
-    connection.close();
+    mongoose.connection.db.dropDatabase()
 });
 
 

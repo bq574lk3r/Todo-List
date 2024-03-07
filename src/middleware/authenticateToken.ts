@@ -1,13 +1,16 @@
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 const SECRET_KEY = String(process.env.SECRET_KEY);
-
-const authenticateToken = (req: any, res: any, next: any) => {
+interface IRequestAuth extends Request {
+    userId?: string
+}
+const authenticateToken = (req: IRequestAuth, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers?.authorization;
-        console.log(authHeader)
+
         const token = authHeader && authHeader.split(' ')[1];
         if (token == null) res.status(401).send('Unauthorized');
-        jwt.verify(token, SECRET_KEY, (err: any, payload: any) => {
+        jwt.verify(String(token), SECRET_KEY, (err: any, payload: any) => {
             if (err) {
                 throw new Error('invalid token')
             };
