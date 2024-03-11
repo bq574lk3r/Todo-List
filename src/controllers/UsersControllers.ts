@@ -51,7 +51,7 @@ class UsersControllers {
                 return res.status(401).json({ message: "Неверный email или пароль" });
             }
 
-            const isPasswordValid = await bcrypt.compare(password, user.password);
+            const isPasswordValid = await bcrypt.compare(password, String(user.password));
             if (!isPasswordValid) {
                 return res.status(401).json({ message: "Неверный email или пароль" });
             }

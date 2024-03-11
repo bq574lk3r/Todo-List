@@ -4,10 +4,17 @@ import { ObjectId } from 'mongodb'
 
 const { getConnection, useDefaultDb } = MongoHelpers
 
+interface ITask {
+    id: string,
+    isCompleted: boolean,
+    title: string,
+    idUser?: string,
+}
+
 export class TasksServices {
     #COLLECTION_TASKS = 'tasks';
     #COLLECTION_USERS = 'users';
-    async getTasks(idUser: string): Promise<any> {
+    async getTasks(idUser: string): Promise<Array<ITask> | void> {
         try {
             const connection = await getConnection();
             const db = useDefaultDb(connection);
@@ -18,43 +25,38 @@ export class TasksServices {
                 })
                 .project({ '_idUser': 0 }).sort({ isCompleted: 1, _id: 1 })
                 .toArray();
-
             connection.close();
-            if (!tasks) {
-                throw new Error('404')
-            }
+
             return tasks;
-        } catch (error) {
-            throw new Error('404');
+        } catch (err) {
+            throw err;
         }
     }
-    
-    async createTask(title: string, isCompleted: boolean, idUser: string): Promise<any> {
+
+    async createTask(title: string, isCompleted: boolean, idUser: string): Promise<ITask | void> {
         try {
             const connection = await getConnection();
             const db = useDefaultDb(connection);
-            
+
             const currentTask = new Task(title, isCompleted, new ObjectId(idUser));
 
             const idTask = (await db.collection(this.#COLLECTION_TASKS)
-                .insertOne(currentTask)).insertedId;
-
-            await db.collection(this.#COLLECTION_USERS)
-                .updateOne({ _id: new ObjectId(idUser) }, { $push: { tasks: idTask } })
+                .insertOne(currentTask)).insertedId.toString();
 
             connection.close();
+
             return {
-                id: idTask.toString(),
-                idUser: currentTask._idUser,
-                isCompleted: currentTask.isCompleted,
-                title: currentTask.title
+                id: idTask,
+                idUser,
+                isCompleted,
+                title
             };
         } catch (err) {
-            return "ошибка при создании таски"
+            throw err
         }
     }
 
-    async updateTitle(title: string, idUser: string, idTask: string): Promise<any> {
+    async updateTitle(title: string, idUser: string, idTask: string): Promise<ITask | void> {
         try {
 
             const connection = await getConnection();
@@ -68,20 +70,20 @@ export class TasksServices {
             if (!taskById) {
                 throw new Error('404')
             }
-
+            const { _id: id, isCompleted } = taskById
             return {
-                id: taskById._id,
-                idUser: taskById._idUser,
-                title: taskById.title,
-                isCompleted: taskById.isCompleted
+                id,
+                idUser,
+                title,
+                isCompleted
             };
 
         } catch (err: any) {
-            throw new Error(err)
+            throw err
         }
     }
 
-    async updateStatus(idUser: any, idTask: any): Promise<any> {
+    async updateStatus(idUser: string, idTask: string): Promise<ITask | void> {
         try {
             const connection = await getConnection();
             const db = useDefaultDb(connection);
@@ -89,28 +91,20 @@ export class TasksServices {
             const taskById = await db.collection(this.#COLLECTION_TASKS)
                 .findOneAndUpdate(
                     { _id: new ObjectId(idTask) },
-                    [{
-                        $set: {
-                            isCompleted: {
-                                $not: "$isCompleted"
-                            }
-                        }
-                    }],
-                    {
-                        returnDocument: "after"
-                    })
+                    [{ $set: { isCompleted: { $not: "$isCompleted" } } }],
+                    { returnDocument: "after" })
 
             connection.close();
 
             if (!taskById) {
                 throw new Error('404')
             }
-
+            const { _id: id, title, isCompleted } = taskById
             return {
-                id: taskById._id,
-                idUser: taskById._idUser,
-                title: taskById.title,
-                isCompleted: taskById.isCompleted
+                id,
+                idUser,
+                title,
+                isCompleted
             };
 
         } catch (err: any) {
@@ -133,7 +127,7 @@ export class TasksServices {
 
             return 'deleted'
         } catch (err) {
-            return 'ошибка при удалении таски';
+            throw err;
         }
 
     }

@@ -2,46 +2,56 @@ import { User } from '../models/User';
 import MongoHelpers from '../helpers/MongoHelpers';
 const { getConnection, useDefaultDb } = MongoHelpers
 
+interface IUser {
+    id?: string,
+    username: string,
+    email: string,
+    password?: string,
+}
 
 class UsersServices {
     #COLLECTION = "users";
-    async createUser(username: string, email: string, password: string): Promise<any> {
+    async createUser(username: string, email: string, password: string): Promise<IUser | void> {
         try {
             const currentUser = new User(username, email, password);
             const connection = await getConnection();
             const db = useDefaultDb(connection);
-            if (!await db.collection(this.#COLLECTION).findOne({ $or: [{ email: email }, { username: username }] })) {
-                currentUser.id = (await db.collection(this.#COLLECTION).insertOne(currentUser)).insertedId
-            } else {
+
+            const existingUser = await db.collection(this.#COLLECTION).findOne({ $or: [{ email: email }, { username: username }] })
+
+            if (existingUser) {
                 connection.close();
-                throw 'the user is already registered';
+                throw new Error('the user is already registered');
             }
+            const userId = (await db.collection(this.#COLLECTION).insertOne(currentUser)).insertedId.toString()
             connection.close();
+
             return {
-                id: currentUser.id,
-                username: currentUser.username,
-                email: currentUser.email
+                id: userId,
+                username,
+                email
             };
         } catch (err: any) {
-            throw new Error(err);
+            throw err;
         }
     }
 
-    async getUserByEmail(email: string): Promise<any> {
+    async getUserByEmail(email: string): Promise<IUser | void> {
         try {
             const connection = await getConnection();
             const db = useDefaultDb(connection);
             const currentUser = await db.collection(this.#COLLECTION)
-                .findOne({ email: email })
+                .findOne({ email })
             connection.close();
+            const { _id: id, username, password } = currentUser
             return {
-                id: currentUser._id,
-                username: currentUser.username,
-                email: currentUser.email,
-                password: currentUser.password
+                id, 
+                username,
+                email,
+                password
             };
         } catch (err) {
-            return err;
+            throw err;
         }
 
     }
