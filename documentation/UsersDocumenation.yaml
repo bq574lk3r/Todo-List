@@ -24,7 +24,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/Errors"
 
   /login/:
     post:
@@ -52,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/Errors"
 
 components:
   schemas:
@@ -89,9 +89,11 @@ components:
         password:
           type: string
           example: t3stPas$
-    ValidationError:
+    Errors:
       type: object
       properties:
+        code: 
+          type: string
         errors:
           type: array
           items:

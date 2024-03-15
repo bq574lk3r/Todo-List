@@ -1,44 +1,33 @@
 import User from '../models/User';
+import ResponceError from '../utils/ResponseError';
+import { ObjectId } from 'mongodb'
 
 interface IUser {
-    id: string,
+    id: ObjectId,
     username: string,
     email: string,
     password?: string,
 }
-
 class UsersServices {
     async createUser(username: string, email: string, password: string): Promise<IUser | void> {
-        try {
-            const currentUser = new User({ username, email, password });
 
-            await currentUser.save().catch(() => {
-                throw 'the user is already registered'
-            })
+        const currentUser = new User({ username, email, password });
 
-            return {
-                id: currentUser._id.toString(),
-                username,
-                email
-            }
-        } catch (err: any) {
-            throw new Error(err);
+        try { 
+            await currentUser.save() 
+        } catch (error) { 
+            throw new ResponceError(400, "the user is already registered") 
         }
+        
+        const { password: skipPass, _id: id, ...result } = currentUser.toObject();
+        return { id, ...result };
     }
 
-    async getUserByEmail(email: string): Promise<IUser | void > {
-        try {
-            const currentUser = await User.findOne({ email }).catch(() => { throw '404' });
+    async getUserByEmail(email: string): Promise<IUser | void> {
 
-            if (currentUser) return {
-                id: currentUser._id.toString(),
-                username: currentUser.username,
-                email: currentUser.email,
-                password: currentUser.password
-            };
-        } catch (err: any) {
-            throw new Error(err);
-        }
+        const currentUser = await User.findOne({ email })
+
+        if (currentUser) return currentUser.toObject();
 
     }
 }

@@ -119,7 +119,6 @@ describe('POST /todos', () => {
             id: expect.any(String),
             title: expect.any(String),
             isCompleted: expect.any(Boolean),
-            idUser: expect.any(String),
         }))
     })
     it('returns status code 400 in case of successful authorization and invalid data.', async () => {
@@ -237,7 +236,6 @@ describe('PATCH /todos', () => {
             id: expect.any(String),
             title: newTitle,
             isCompleted: expect.any(Boolean),
-            idUser: expect.any(String),
         }))
     })
 

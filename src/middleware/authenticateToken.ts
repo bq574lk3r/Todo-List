@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import ResponceError from '../utils/ResponseError';
+import ErrorHandler from '../helpers/ErrorHandlerHelpers';
 import jwt from 'jsonwebtoken';
 const SECRET_KEY = String(process.env.SECRET_KEY);
 interface IRequestAuth extends Request {
@@ -9,17 +11,16 @@ const authenticateToken = (req: IRequestAuth, res: Response, next: NextFunction)
         const authHeader = req.headers?.authorization;
 
         const token = authHeader && authHeader.split(' ')[1];
-        if (token == null) res.status(401).send('Unauthorized');
+        if (token == null) throw new ResponceError(401);
         jwt.verify(String(token), SECRET_KEY, (err: any, payload: any) => {
-            if (err) {
-                throw new Error('invalid token')
-            };
+            if (err) throw new ResponceError(401);
+
             req.userId = payload.userId;
 
             next();
         });
-    } catch (error) {
-        res.status(401).send('Unauthorized (для работы нужен токен)');
+    } catch (error: any) {
+        ErrorHandler.do(error, res)
     }
 };
 
