@@ -18,12 +18,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: Unauthorized
+                $ref: "#/components/schemas/Errors"
     post:
       summary: Create task
       tags:
-       - Task
+        - Task
       security:
         - bearerAuth: []
       requestBody:
@@ -54,13 +53,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/Errors"
 
   /todos/{id}:
     patch:
       summary: Update title
       tags:
-       - Task
+        - Task
       security:
         - bearerAuth: []
       parameters:
@@ -95,7 +94,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/Errors"
     delete:
       summary: Delete task
       tags:
@@ -114,46 +113,46 @@ paths:
         "200":
           description: <b>Ok</b>
           content:
-                application/json:
-                  schema:
-                    type: string
-                    example: deleted
+            application/json:
+              schema:
+                type: string
+                example: deleted
         "400":
           description: Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "#/components/schemas/Errors"
 
   /todos/{id}/isCompleted:
-      patch:
-        summary: Task status update 
-        tags:
+    patch:
+      summary: Task status update
+      tags:
         - Task
-        security:
-          - bearerAuth: []
-        parameters:
-          - in: path
-            name: id
-            required: true
-            description: Идентификатор задачи
-            schema:
-              type: string
-              example: 96bb5f89-78d6-4a16-89d4-7294f32b92c4
-        responses:
-          "200":
-            description: <b>Ok</b>
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/Task"
-          "400":
-            description: Error
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/ValidationError"             
-    
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Идентификатор задачи
+          schema:
+            type: string
+            example: 96bb5f89-78d6-4a16-89d4-7294f32b92c4
+      responses:
+        "200":
+          description: <b>Ok</b>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+
 components:
   schemas:
     TasksArray:
@@ -172,12 +171,14 @@ components:
         isCompleted:
           type: boolean
           example: true
-        idUser:
-          type: string
-          example: e2930e52-bce3-4b89-b8bd-7f00d88914e1
-    ValidationError:
+        # idUser:
+        #   type: string
+        #   example: e2930e52-bce3-4b89-b8bd-7f00d88914e1
+    Errors:
       type: object
       properties:
+        code:
+          type: string
         errors:
           type: array
           items:

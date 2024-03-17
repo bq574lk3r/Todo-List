@@ -1,5 +1,6 @@
 import { Task } from '../models/Task';
 import MongoHelpers from '../helpers/MongoHelpers';
+import ResponseError from '../utils/ResponseError';
 import { ObjectId } from 'mongodb'
 
 const { getConnection, useDefaultDb } = MongoHelpers
@@ -13,122 +14,109 @@ interface ITask {
 
 export class TasksServices {
     #COLLECTION_TASKS = 'tasks';
-    #COLLECTION_USERS = 'users';
     async getTasks(idUser: string): Promise<Array<ITask> | void> {
-        try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
+        const connection = await getConnection();
+        const db = useDefaultDb(connection);
 
-            const tasks = await db.collection(this.#COLLECTION_TASKS)
-                .find({
-                    _idUser: new ObjectId(idUser)
-                })
-                .project({ '_idUser': 0 }).sort({ isCompleted: 1, _id: 1 })
-                .toArray();
-            connection.close();
+        const tasks = await db.collection(this.#COLLECTION_TASKS)
+            .find({
+                _idUser: new ObjectId(idUser)
+            })
+            .project({ '_idUser': 0 }).sort({ isCompleted: 1, _id: 1 })
+            .toArray();
+        connection.close();
 
-            return tasks;
-        } catch (err) {
-            throw err;
-        }
+        return tasks;
+
     }
 
     async createTask(title: string, isCompleted: boolean, idUser: string): Promise<ITask | void> {
-        try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
 
-            const currentTask = new Task(title, isCompleted, new ObjectId(idUser));
+        const connection = await getConnection();
+        const db = useDefaultDb(connection);
 
-            const idTask = (await db.collection(this.#COLLECTION_TASKS)
-                .insertOne(currentTask)).insertedId.toString();
+        const currentTask = new Task(title, isCompleted, new ObjectId(idUser));
 
-            connection.close();
+        const idTask = (await db.collection(this.#COLLECTION_TASKS)
+            .insertOne(currentTask)).insertedId.toString();
 
-            return {
-                id: idTask,
-                idUser,
-                isCompleted,
-                title
-            };
-        } catch (err) {
-            throw err
-        }
+        connection.close();
+       
+        return {
+            id: idTask,
+            idUser,
+            isCompleted,
+            title
+        };
+
     }
 
     async updateTitle(title: string, idUser: string, idTask: string): Promise<ITask | void> {
-        try {
 
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
-            const taskById = await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndUpdate({ _id: new ObjectId(idTask) }, { $set: { title } }, {
-                    returnDocument: "after"
-                })
-            connection.close();
+        const connection = await getConnection();
+        const db = useDefaultDb(connection);
+        const taskById = await db.collection(this.#COLLECTION_TASKS)
+            .findOneAndUpdate({ _id: new ObjectId(idTask) }, { $set: { title } }, {
+                returnDocument: "after"
+            })
 
-            if (!taskById) {
-                throw new Error('404')
-            }
-            const { _id: id, isCompleted } = taskById
-            return {
-                id,
-                idUser,
-                title,
-                isCompleted
-            };
+        connection.close();
 
-        } catch (err: any) {
-            throw err
+        if (!taskById) {
+            throw new ResponseError(404)
         }
+        const { _id: id, isCompleted } = taskById
+        return {
+            id,
+            idUser,
+            title,
+            isCompleted
+        };
     }
 
     async updateStatus(idUser: string, idTask: string): Promise<ITask | void> {
-        try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
 
-            const taskById = await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndUpdate(
-                    { _id: new ObjectId(idTask) },
-                    [{ $set: { isCompleted: { $not: "$isCompleted" } } }],
-                    { returnDocument: "after" })
+        const connection = await getConnection();
+        const db = useDefaultDb(connection);
 
-            connection.close();
+        const taskById = await db.collection(this.#COLLECTION_TASKS)
+            .findOneAndUpdate(
+                { _id: new ObjectId(idTask) },
+                [{ $set: { isCompleted: { $not: "$isCompleted" } } }],
+                { returnDocument: "after" })
 
-            if (!taskById) {
-                throw new Error('404')
-            }
-            const { _id: id, title, isCompleted } = taskById
-            return {
-                id,
-                idUser,
-                title,
-                isCompleted
-            };
+        connection.close();
 
-        } catch (err: any) {
-            throw new Error(err);
+        if (!taskById) {
+            throw new ResponseError(404)
         }
+        const { _id: id, title, isCompleted } = taskById
+        return {
+            id,
+            idUser,
+            title,
+            isCompleted
+        };
+
     }
 
     async deleteTask(idUser: string, idTask: string): Promise<any> {
-        try {
-            const connection = await getConnection();
-            const db = useDefaultDb(connection);
 
-            await db.collection(this.#COLLECTION_TASKS)
-                .findOneAndDelete({
-                    _id: new ObjectId(idTask)
-                })
-            await db.collection(this.#COLLECTION_USERS)
-                .updateOne({ _id: new ObjectId(idUser) }, { $pull: { tasks: new ObjectId(idTask) } })
-            connection.close();
+        const connection = await getConnection();
+        const db = useDefaultDb(connection);
 
-            return 'deleted'
-        } catch (err) {
-            throw err;
+        const taskById = await db.collection(this.#COLLECTION_TASKS)
+            .findOneAndDelete({
+                _id: new ObjectId(idTask)
+            })
+
+        connection.close();
+
+        if (!taskById) {
+            throw new ResponseError(404)
         }
+        return 'deleted'
+
 
     }
 }

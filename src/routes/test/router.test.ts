@@ -112,7 +112,7 @@ describe('POST /todos', () => {
             })).body.token
     });
 
-    it('returns status code 201 in case of successful authorization and task creation.', async () => {
+    it('returns status code 200 in case of successful authorization and task creation.', async () => {
         const res = await request(app)
             .post('/todos')
             .set('Authorization', 'Bearer ' + token)
@@ -121,7 +121,7 @@ describe('POST /todos', () => {
                 'isCompleted': false
             })
 
-        expect(res.statusCode).toEqual(201);
+        expect(res.statusCode).toEqual(200);
         expect(res.body).toEqual(expect.objectContaining({
             id: expect.any(String),
             title: expect.any(String),

@@ -1,7 +1,8 @@
 import tasksServices from '../services/TasksServices';
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
 import { validationResult } from "express-validator";
-import Sentry from "@sentry/node";
+import ResponseError from '../utils/ResponseError';
+import ErrorHandler from '../helpers/ErrorHandlerHelpers';
 
 interface IRequestTasks extends Request {
     userId?: string
@@ -13,22 +14,17 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+                throw new ResponseError(400, errors.array());
             }
-            if(!req.userId){
-                return res.status(400).json({ errors: 'token does not contain user ID' });
+            if (!req.userId) {
+                throw new ResponseError(400, 'token does not contain user ID')
             }
-            await tasksServices.getTasks(req.userId)
-                .then((tasks: any) => {
-                    res.status(200).send(tasks);
-                })
-                .catch(() => {
-                    res.status(400).send({
-                        errors: 'bad request'
-                    });
-                })
+            const tasks = await tasksServices.getTasks(req.userId)
+
+            res.status(200).send(tasks);
+
         } catch (error) {
-            Sentry.captureException(error);
+            ErrorHandler.do(error, res)
         }
 
     }
@@ -37,24 +33,19 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+                throw new ResponseError(400, errors.array());
             }
-            if(!req.userId){
-                return res.status(400).json({ errors: 'token does not contain user ID' });
+            if (!req.userId) {
+                throw new ResponseError(400, 'token does not contain user ID')
             }
             const { title, isCompleted } = req.body;
-            await tasksServices.createTask(title, isCompleted, req.userId)
-                .then((newTask: any) => {
-                    res.status(201).send(newTask);
-                })
-                .catch(() => {
-                    res.status(400).send({
-                        errors: 'error when creating task'
-                    });
-                });
+
+            const task = await tasksServices.createTask(title, isCompleted, req.userId)
+
+            res.status(200).send(task);
 
         } catch (error) {
-            Sentry.captureException(error);
+            ErrorHandler.do(error, res)
         }
     }
 
@@ -62,23 +53,19 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+                throw new ResponseError(400, errors.array());
             }
-            if(!req.userId){
-                return res.status(400).json({ errors: 'token does not contain user ID' });
+            if (!req.userId) {
+                throw new ResponseError(400, 'token does not contain user ID')
             }
             const { title } = req.body;
-            return await tasksServices.updateTitle(title, req.userId, req.params.id)
-                .then((updatedTask) => {
-                    return res.status(200).send(updatedTask)
-                })
-                .catch(() => {
-                    return res.status(404).send({
-                        errors: 'not found'
-                    })
-                });
+
+            const updatedTask = await tasksServices.updateTitle(title, req.userId, req.params.id)
+
+            res.status(200).send(updatedTask);
+
         } catch (error) {
-            Sentry.captureException(error);
+            ErrorHandler.do(error, res)
         }
     }
 
@@ -86,20 +73,18 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+                throw new ResponseError(400, errors.array());
             }
-            if(!req.userId){
-                return res.status(400).json({ errors: 'token does not contain user ID' });
+            if (!req.userId) {
+                throw new ResponseError(400, 'token does not contain user ID')
             }
-            await tasksServices.updateStatus(req.userId, req.params.id)
-                .then((updatedTask) => {
-                    res.status(200).send(updatedTask)
-                })
-                .catch(() => {
-                    res.status(404).send({ errors: 'not found' })
-                });
+
+            const updatedTask = await tasksServices.updateStatus(req.userId, req.params.id)
+
+            res.status(200).send(updatedTask);
+
         } catch (error) {
-            Sentry.captureException(error);
+            ErrorHandler.do(error, res)
         }
     }
 
@@ -107,14 +92,15 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+                throw new ResponseError(400, errors.array());
             }
-            if(!req.userId){
-                return res.status(400).json({ errors: 'token does not contain user ID' });
+            if (!req.userId) {
+                throw new ResponseError(400, 'token does not contain user ID')
             }
-            res.send(await tasksServices.deleteTask(req.userId, req.params.id));
+            const isDeleted = await tasksServices.deleteTask(req.userId, req.params.id)
+            res.status(200).send(isDeleted);
         } catch (error) {
-            Sentry.captureException(error);
+            ErrorHandler.do(error, res)
         }
 
     }
