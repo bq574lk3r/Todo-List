@@ -1,10 +1,3 @@
-interface IErrorProp {
-    code: string | number,
-    message?: string,
-    errors?: Array<any>
-
-}
-
 export default class ResponseError {
     code: number;
     errors: Object | Array<any>;

@@ -1,5 +1,5 @@
 import Task from '../models/Task';
-import ResponceError from '../utils/ResponseError';
+import ResponseError from '../utils/ResponseError';
 import { ObjectId } from 'mongodb'
 
 
@@ -33,7 +33,7 @@ export class TasksServices {
             .findByIdAndUpdate(idTask, { $set: { title: titleNew } }, { returnDocument: "after" });
 
         if (!taskById) {
-            throw new ResponceError(404)
+            throw new ResponseError(404)
         }
 
         return taskById.toObject();
@@ -49,7 +49,7 @@ export class TasksServices {
             );
 
         if (!taskById) {
-            throw new ResponceError(404)
+            throw new ResponseError(404)
         }
 
         return taskById.toObject();
@@ -61,7 +61,7 @@ export class TasksServices {
         const taskById = await Task
             .findByIdAndDelete(idTask);
         if (!taskById) {
-            throw new ResponceError(404)
+            throw new ResponseError(404)
         }
 
         return 'deleted';

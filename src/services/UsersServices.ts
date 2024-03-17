@@ -1,5 +1,5 @@
 import User from '../models/User';
-import ResponceError from '../utils/ResponseError';
+import ResponseError from '../utils/ResponseError';
 import { ObjectId } from 'mongodb'
 
 interface IUser {
@@ -16,9 +16,9 @@ class UsersServices {
         try { 
             await currentUser.save() 
         } catch (error) { 
-            throw new ResponceError(400, "the user is already registered") 
+            throw new ResponseError(400, "the user is already registered") 
         }
-        
+
         const { password: skipPass, _id: id, ...result } = currentUser.toObject();
         return { id, ...result };
     }

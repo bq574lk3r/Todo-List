@@ -1,5 +1,5 @@
 import usersServices from '../services/UsersServices';
-import ResponceError from '../utils/ResponseError';
+import ResponseError from '../utils/ResponseError';
 import { Request, Response } from 'express';
 import { validationResult } from "express-validator";
 
@@ -14,7 +14,7 @@ class UsersControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             const { username, email, password } = req.body;
 
@@ -37,19 +37,19 @@ class UsersControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
 
             const { email, password } = req.body;
 
             const user = await usersServices.getUserByEmail(email);
             if (!user) {
-                throw new ResponceError(400, "Invalid email address or password" );
+                throw new ResponseError(400, "Invalid email address or password" );
             }
 
             const isPasswordValid = await bcrypt.compare(password, String(user.password));
             if (!isPasswordValid) {
-                throw new ResponceError(400, "Invalid email address or password" );
+                throw new ResponseError(400, "Invalid email address or password" );
             }
 
             const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "365d" });//TODO: don't forget to change

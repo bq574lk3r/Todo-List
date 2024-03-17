@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import ResponceError from '../utils/ResponseError';
+import ResponseError from '../utils/ResponseError';
 import ErrorHandler from '../helpers/ErrorHandlerHelpers';
 import jwt from 'jsonwebtoken';
 const SECRET_KEY = String(process.env.SECRET_KEY);
@@ -11,9 +11,9 @@ const authenticateToken = (req: IRequestAuth, res: Response, next: NextFunction)
         const authHeader = req.headers?.authorization;
 
         const token = authHeader && authHeader.split(' ')[1];
-        if (token == null) throw new ResponceError(401);
+        if (token == null) throw new ResponseError(401);
         jwt.verify(String(token), SECRET_KEY, (err: any, payload: any) => {
-            if (err) throw new ResponceError(401);
+            if (err) throw new ResponseError(401);
 
             req.userId = payload.userId;
 

@@ -1,7 +1,7 @@
 import tasksServices from '../services/TasksServices';
 import { Request, Response } from 'express';
 import { validationResult } from "express-validator";
-import ResponceError from '../utils/ResponseError';
+import ResponseError from '../utils/ResponseError';
 import ErrorHandler from '../helpers/ErrorHandlerHelpers';
 interface IRequestTasks extends Request {
     userId?: string
@@ -13,12 +13,12 @@ class TasksControllers {
         try {
 
             const errors = validationResult(req);
-            console.log(errors.array())
+
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             if (!req.userId) {
-                throw new ResponceError(400, 'token does not contain user ID');
+                throw new ResponseError(400, 'token does not contain user ID');
             }
             const tasks = await tasksServices.getTasks(req.userId);
 
@@ -34,10 +34,10 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             if (!req.userId) {
-                throw new ResponceError(400, 'token does not contain user ID');
+                throw new ResponseError(400, 'token does not contain user ID');
             }
             const { title, isCompleted } = req.body;
 
@@ -54,10 +54,10 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             if (!req.userId) {
-                throw new ResponceError(400, 'token does not contain user ID');
+                throw new ResponseError(400, 'token does not contain user ID');
             }
             const { title } = req.body;
 
@@ -76,10 +76,10 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             if (!req.userId) {
-                throw new ResponceError(400, 'token does not contain user ID');
+                throw new ResponseError(400, 'token does not contain user ID');
             }
             const updatedTask = await tasksServices.updateStatus(req.userId, req.params.id);
 
@@ -94,10 +94,10 @@ class TasksControllers {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new ResponceError(400, errors.array());
+                throw new ResponseError(400, errors.array());
             }
             if (!req.userId) {
-                throw new ResponceError(400, 'token does not contain user ID');
+                throw new ResponseError(400, 'token does not contain user ID');
             }
             const isDeleted = await tasksServices.deleteTask(req.userId, req.params.id);
 
